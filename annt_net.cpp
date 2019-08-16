@@ -1,4 +1,5 @@
 #include <ANNT.hpp>
+#include <iostream>
 #include "network.hpp"
 #include "annt_net.hpp"
 
@@ -8,16 +9,18 @@ using namespace ANNT::Neuro;
 using namespace ANNT::Neuro::Training;
 
 ANNT_Net::ANNT_Net(int num_epochs, int seq_len, int batch_size, int eval_batch_size, int n_sequences, float learning_rate, std::vector<double> raw_time_series, int input_dim, int hidden_dim, int output_dim) : 
-	Network(num_epochs, seq_len, batch_size, eval_batch_size, n_sequences, learning_rate, raw_time_series, input_dim, hidden_dim, output_dim), 
-	net(new XNeuralNetwork()),
-	optimiser(new XNesterovMomentumOptimizer(learning_rate)),
-	cost(new XMSECost()),
-      	net_training(net, optimiser, cost) {
-        net->AddLayer(make_shared<XLSTMLayer>(input_dim, hidden_dim));
+	Network(num_epochs, seq_len, batch_size, eval_batch_size, n_sequences, learning_rate, raw_time_series, input_dim, hidden_dim, output_dim) {
+	net = make_shared<XNeuralNetwork>();
+
+	net->AddLayer(make_shared<XLSTMLayer>(input_dim, hidden_dim));
         net->AddLayer(make_shared<XTanhActivation>());
         net->AddLayer(make_shared<XFullyConnectedLayer>(hidden_dim, output_dim));
-	
-        net_training.SetTrainingSequenceLength(batch_size);
+
+	net_training = make_shared<XNetworkTraining>(net,
+                              make_shared<XNesterovMomentumOptimizer>(learning_rate),
+                              make_shared<XMSECost>());
+
+        net_training->SetTrainingSequenceLength(batch_size);
 }
 
 vector<double> ANNT_Net::train(bool verbose){
@@ -25,17 +28,16 @@ vector<double> ANNT_Net::train(bool verbose){
 	vector<double> hist;
         for (size_t i = 0; i < n_sequences; i++){
             for (size_t j = 0; j < batch_size; j++){
-                inputs.push_back({raw_time_series[i + j]});
-                outputs.push_back({raw_time_series[i + j + 1]});
+                inputs.push_back({(float)raw_time_series[i + j]});
+                outputs.push_back({(float)raw_time_series[i + j + 1]});
             }
         }
-
-        for (size_t epoch = 1; epoch <= num_epochs; epoch++){
-            hist.push_back(net_training.TrainBatch(inputs, outputs));
-            net_training.ResetState();
+        for (size_t epoch = 0; epoch < num_epochs; epoch++){
+            hist.push_back(net_training->TrainBatch(inputs, outputs));
+            net_training->ResetState();
 
             if ((epoch % 100) == 0  && verbose){
-                printf("%0.4f ", static_cast<float>(hist.back()));
+                printf("Epoch %ld | MSE: %f \n", epoch, static_cast<float>(hist.back()));
             }
         }
 	return hist;
@@ -50,11 +52,11 @@ pair<vector<double>, double> ANNT_Net::evaluate(){
         for (size_t i = 0; i < seq_len-1; i++){
             input[0] = raw_time_series[i]; // here input always comes from original time series
 
-            net_training.Compute(input, output);
+            net_training->Compute(input, output);
             network_output.push_back(output[0]);
-	    avg_error += (raw_time_series[i]-output[0])*(raw_time_series[i]-output[0]);
+	    avg_error += (raw_time_series[i+1]-output[0])*(raw_time_series[i+1]-output[0]);
         }
-	avg_error /= raw_time_series.size();
+	avg_error /= (seq_len-1);
 	/*
         // now predict some points, which were excluded from training
         fvector_t network_prediction;

@@ -79,9 +79,8 @@ Pytorch::Pytorch(int num_epochs, int seq_len, int batch_size, int eval_batch_siz
 			mi = min(mi, d);
 			ma = max(ma, d);
 		}
-
 		for(int i = 0; i < seq_len; i++){
-                	time_series[i][0] = (raw_time_series[i] - mi) / (ma - mi);
+			time_series[i][0] = (raw_time_series[i] - mi) / (ma - mi);
  		}
 	}
 
@@ -121,7 +120,7 @@ vector<double> Pytorch::train(bool verbose) {
                	auto loss = at::mse_loss(y_pred, outputs);
 
                 if (i % 100 == 0 && verbose){
-       	                cout << "Epoch: " << i << " | MSE: " << loss << endl;
+			cout << "Epoch: " << i << " | MSE: " << loss.item().to<float>() << endl;
                 }
 	        hist[i] = loss.item();
 

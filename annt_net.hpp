@@ -12,9 +12,7 @@ class ANNT_Net : public Network {
 
 	private:
 		std::shared_ptr<ANNT::Neuro::XNeuralNetwork> net;
-		std::shared_ptr<ANNT::Neuro::Training::INetworkOptimizer> optimiser;
-		std::shared_ptr<ANNT::Neuro::Training::ICostFunction> cost;
-		ANNT::Neuro::Training::XNetworkTraining net_training;
+		std::shared_ptr<ANNT::Neuro::Training::XNetworkTraining> net_training;
 };
 
 #endif
