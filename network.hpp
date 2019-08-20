@@ -18,8 +18,22 @@ class Network {
 		int input_dim;
 		int output_dim;
 		int hidden_dim;
+		double mi, ma;
 		float learning_rate;
 		std::vector<double> raw_time_series;
+		std::vector<double> time_series;
+
+		std::vector<pair<
+			std::vector<std::vector<double>>,
+			std::vector<std::vector<double>>
+			>> create_training_samples();
+		
+		//in place normalization of input time series
+		void normalize_data();
+		//in place diff of input time series
+		void apply_diff();
+
+		std::vector<std::vector<double>> rescale(std::vector<std::vector<double>> &source);
 };
 
 #endif

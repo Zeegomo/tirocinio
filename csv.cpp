@@ -41,3 +41,8 @@ std::vector<double> loadFlatData(){
 	}
 	return res;
 }
+
+Config loadConfig(std::string path){
+        ifstream conf(path);
+        while()       
+}
