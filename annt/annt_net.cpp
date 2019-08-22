@@ -8,31 +8,38 @@ using namespace ANNT;
 using namespace ANNT::Neuro;
 using namespace ANNT::Neuro::Training;
 
-ANNT_Net::ANNT_Net(int num_epochs, int seq_len, int batch_size, int eval_batch_size, int n_sequences, float learning_rate, std::vector<double> raw_time_series, int input_dim, int hidden_dim, int output_dim) : 
-	Network(num_epochs, seq_len, batch_size, eval_batch_size, n_sequences, learning_rate, raw_time_series, input_dim, hidden_dim, output_dim) {
+ANNT_Net::ANNT_Net(Config conf, vector<vector<double>> raw_time_series) : 
+	Network(conf, raw_time_series) {
 	net = make_shared<XNeuralNetwork>();
 
-	net->AddLayer(make_shared<XLSTMLayer>(input_dim, hidden_dim));
+	net->AddLayer(make_shared<XLSTMLayer>(conf.input_dim, conf.hidden_dim));
         net->AddLayer(make_shared<XTanhActivation>());
-        net->AddLayer(make_shared<XFullyConnectedLayer>(hidden_dim, output_dim));
+        net->AddLayer(make_shared<XFullyConnectedLayer>(conf.hidden_dim, conf.output_dim));
 
 	net_training = make_shared<XNetworkTraining>(net,
-                              make_shared<XNesterovMomentumOptimizer>(learning_rate),
+                              make_shared<XNesterovMomentumOptimizer>(conf.learning_rate),
                               make_shared<XMSECost>());
 
-        net_training->SetTrainingSequenceLength(batch_size);
+        net_training->SetTrainingSequenceLength(conf.batch_size);
 }
 
-vector<double> ANNT_Net::train(bool verbose){
-        vector<fvector_t> inputs, outputs;
+Error ANNT_Net::train(bool verbose){
+        auto samples = create_training_samples();	
+	vector<fvector_t> inputs, outputs;
+
+	for(auto vv : samples){
+		for(int i = 0; i < vv.first.size(); i++){
+			fvector_t tmp;
+			for(int j = 0; j < vv.first[0].size(); j++){
+				tmp.push_back(vv.first[i][j]);
+			}
+			inputs.push_back(tmp);
+			outputs.push_back({(float)vv.second[i][0]});
+		}
+	}
+
 	vector<double> hist;
-        for (size_t i = 0; i < n_sequences; i++){
-            for (size_t j = 0; j < batch_size; j++){
-                inputs.push_back({(float)raw_time_series[i + j]});
-                outputs.push_back({(float)raw_time_series[i + j + 1]});
-            }
-        }
-        for (size_t epoch = 0; epoch < num_epochs; epoch++){
+        for (size_t epoch = 0; epoch < conf.num_epochs; epoch++){
             hist.push_back(net_training->TrainBatch(inputs, outputs));
             net_training->ResetState();
 
@@ -40,23 +47,22 @@ vector<double> ANNT_Net::train(bool verbose){
                 printf("Epoch %ld | MSE: %f \n", epoch, static_cast<float>(hist.back()));
             }
         }
-	return hist;
+	return err;
 }
 
 pair<vector<double>, double> ANNT_Net::evaluate(){
 	fvector_t network_output;
-        fvector_t input(1);
+        fvector_t input(conf.input_dim);
         fvector_t output(1);
 
-	double avg_error = 0;
-        for (size_t i = 0; i < seq_len-1; i++){
-            input[0] = raw_time_series[i]; // here input always comes from original time series
-
-            net_training->Compute(input, output);
-            network_output.push_back(output[0]);
-	    avg_error += (raw_time_series[i+1]-output[0])*(raw_time_series[i+1]-output[0]);
+        for (size_t i = 0; i < time_series.size()-1; i++){
+		for(int j = 0; j < conf.input_dim; j++){
+			input[j] = time_series[i][j];
+		}
+		
+        	net_training->Compute(input, output);
+        	network_output.push_back(output[0]);
         }
-	avg_error /= (seq_len-1);
 	/*
         // now predict some points, which were excluded from training
         fvector_t network_prediction;
@@ -98,10 +104,13 @@ pair<vector<double>, double> ANNT_Net::evaluate(){
         // save training/prediction results into CSV file
         SaveData( trainingParams.OutputDataFile, timeSeries, networkOutput, networkPrediction );
 	*/
-	vector<double> res;
-	for(int i = 0; i < seq_len-1; i++){
+	vector<double> res, expected;	
+	for(int i = 0; i < time_series.size()-1; i++){
 		res.push_back(network_output[i]);
+		expected.push_back(time_series[i+1][conf.target_column]);
 	}
+	double avg_error;
+	err.add_record(res, expected);
 	return {res, avg_error};
 }
 

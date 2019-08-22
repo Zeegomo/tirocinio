@@ -7,10 +7,11 @@ struct Config{
 	int output_dim;
 
 	int num_epochs;
-	int seq_len;
 	int batch_size;
 	int n_sequences;
 	float learning_rate;
-}
+
+	int target_column;
+};
 
 #endif
