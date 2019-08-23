@@ -10,20 +10,19 @@
 using namespace std;
 using json = nlohmann::json;
 
-vector<vector<double>> load_data() {
+vector<vector<double>> load_data(Config conf){
 	vector<vector<double>> data;
 
 	//store already mappend strings
-	vector<map<string, double>> conv;
+	map<int, map<string, double>> conv;
 	//store next available double for conversion for each column
-	vector<double> avail_conv;
+	map<int, double> avail_conv;
 	
 	char delimeter = ',';
 	string line = "";
 	int data_index;
         while(getline(cin, line)){
 		vector<double> dest;
-		conv.push_back(map<string, double>());
 		string buf = "";
                 int i = 0;
 		data_index = 0;
@@ -31,14 +30,16 @@ vector<vector<double>> load_data() {
                         if(line[i] != delimeter){
                                 buf += line[i];
                         }else{
-				try{
-					double d = stod(buf);
-					dest.push_back(d);
-				} catch(const invalid_argument &ia){
-					if(conv[i].count(buf) == 0){
-						conv[i][buf] = avail_conv[i]++;
+				if(conf.ignore.count(data_index) == 0){	
+					try{
+						double d = stod(buf);
+						dest.push_back(d);
+					} catch(const invalid_argument &ia){
+						if(conv[data_index].count(buf) == 0){
+								conv[data_index][buf] = avail_conv[data_index]++;
+						}
+						dest.push_back(conv[data_index][buf]);
 					}
-					dest.push_back(conv[i][buf]);
 				}
                                 buf = "";
 				data_index++;
@@ -51,10 +52,23 @@ vector<vector<double>> load_data() {
 
                 data.push_back(dest);
         }
+
+	 if(conf.n_sequences + conf.batch_size >= data.size()){
+                cerr << "Invalid configuration: too many training samples" << endl;
+                exit(EXIT_FAILURE);
+        }
+        if(conf.target_column >= data[0].size() && data[0].size() != 1){
+                cerr << "Invalid column target: " << conf.target_column << ", found " << data[0].size() << " columns" << endl;
+                exit(EXIT_FAILURE);
+        }
+
+        cout << "Training size: " << (conf.n_sequences + conf.batch_size) / (double)data.size() * 100 << "%" << endl;
+
+
         return data;
 }
 
-Config load_config(std::string path, vector<vector<double>> &data){
+Config load_config(std::string path){
         ifstream fin(path);
         json j;
      	fin >> j;
@@ -69,17 +83,10 @@ Config load_config(std::string path, vector<vector<double>> &data){
 	conf.batch_size = j["batch_size"];
 	conf.n_sequences = j["training_samples"];
 	conf.target_column = j["target_column"];
-
-	if(conf.n_sequences + conf.batch_size >= data.size()){
-		cerr << "Invalid configuration: too many training samples" << endl;
-		exit(EXIT_FAILURE);
+	vector<int> ignore = j["ignore"];
+	for(int i : ignore){
+		conf.ignore.insert(i);
 	}
-	if(conf.target_column >= data[0].size() && data[0].size() != 1){
-		cerr << "Invalid column target: " << conf.target_column << ", found " << data[0].size() << " columns" << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	cout << "Training size: " << (conf.n_sequences + conf.batch_size) / (double)data.size() * 100 << "%" << endl;
 
 	return conf;
 }

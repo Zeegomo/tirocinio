@@ -12,7 +12,7 @@ class Pytorch : public Network {
         Pytorch(Config conf, std::vector<std::vector<double>> raw_time_series);
 
         Error train(bool verbose = true);
-        std::pair<std::vector<double>, double> evaluate();
+        std::pair<std::vector<double>, Error> evaluate();
 
         private:
         LSTM model;

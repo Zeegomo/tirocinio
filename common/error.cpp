@@ -30,10 +30,10 @@ void Error::add_record(vector<double> out, vector<double> expected){
 }
 
 void Error::calc(){
-	mse = accumulate(v_mse.begin(), v_mse.end(), 0) / v_mse.size();
-	bias = accumulate(v_bias.begin(), v_bias.end(), 0) / v_bias.size();
-	mad = accumulate(v_mad.begin(), v_mad.end(), 0) / v_mad.size();
-	mape = accumulate(v_mape.begin(), v_mape.end(), 0) / v_mape.size();
+	mse = accumulate(v_mse.begin(), v_mse.end(), 0.0) / v_mse.size();
+	bias = accumulate(v_bias.begin(), v_bias.end(), 0.0) / v_bias.size();
+	mad = accumulate(v_mad.begin(), v_mad.end(), 0.0) / v_mad.size();
+	mape = accumulate(v_mape.begin(), v_mape.end(), 0.0) / v_mape.size();
 	rmse = sqrt(mse);
 }
 

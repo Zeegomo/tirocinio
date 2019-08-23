@@ -6,8 +6,9 @@
 #include "network.hpp"
 
 struct Executor{
-	std::pair<std::vector<std::vector<double>>, Config> get_data();
-	void start(Network model);
+	Executor();
+	std::pair<Config, std::vector<std::vector<double>>> get_data();
+	void start(Network *model);
 
 	private:
 	Config conf;

@@ -1,6 +1,7 @@
 #include <ANNT.hpp>
 #include <iostream>
 #include "network.hpp"
+#include "error.hpp"
 #include "annt_net.hpp"
 
 using namespace std;
@@ -50,7 +51,7 @@ Error ANNT_Net::train(bool verbose){
 	return err;
 }
 
-pair<vector<double>, double> ANNT_Net::evaluate(){
+pair<vector<double>, Error> ANNT_Net::evaluate(){
 	fvector_t network_output;
         fvector_t input(conf.input_dim);
         fvector_t output(1);
@@ -109,8 +110,9 @@ pair<vector<double>, double> ANNT_Net::evaluate(){
 		res.push_back(network_output[i]);
 		expected.push_back(time_series[i+1][conf.target_column]);
 	}
-	double avg_error;
-	err.add_record(res, expected);
-	return {res, avg_error};
+	vector<double> rescaled = rescale(res);
+	err.add_record(rescaled, expected);
+	err.calc();
+	return {rescaled, err};
 }
 

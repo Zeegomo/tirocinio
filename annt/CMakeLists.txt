@@ -14,7 +14,7 @@ if(UNIX)
 	add_executable(annt-rnn ../common/rnn.cpp ../common/error.cpp annt_net.cpp ../common/csv.cpp main.cpp ../common/network.cpp)
 	target_include_directories(annt-rnn PRIVATE ../common/)
 else()
-	add_executable(annt-rnn ..\common\rnn.cpp ..\common\error.cpp annt_net.cpp ..\common\csv.cpp annt-rnn.cpp ..\common\network.cpp)
+	add_executable(annt-rnn ..\common\rnn.cpp ..\common\error.cpp annt_net.cpp ..\common\csv.cpp main.cpp ..\common\network.cpp)
 	target_include_directories(annt-rnn PRIVATE ..\common\ )
 endif()
 	

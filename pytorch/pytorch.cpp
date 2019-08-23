@@ -3,6 +3,7 @@
 #include "network.hpp"
 #include "pytorch.hpp"
 #include "pytorch_utils.hpp"
+#include "error.hpp"
 
 using namespace std;
 
@@ -12,16 +13,13 @@ Pytorch::Pytorch(Config conf, vector<vector<double>> raw_time_series) :
 	                cout << "CUDA is available! Training on GPU." << endl;
         	        device = torch::kCUDA;
         	}
-		cout << conf.n_sequences << endl;	
 		this->model.to(device);
 }
 
 Error Pytorch::train(bool verbose) {
 	auto optimiser = torch::optim::Adam(model.parameters(), conf.learning_rate);
-	cout << "created samples" << endl;
 	auto samples = create_training_samples();
 	
-	cout << "done" << endl;
 	vector<vector<vector<double>>> in;
 	vector<vector<vector<double>>> out;
 	for(auto d : samples){
@@ -29,7 +27,6 @@ Error Pytorch::train(bool verbose) {
 		out.push_back(d.second);
 	}
 
-	cout << "converting to tensor" << endl;
 	auto inputs = to_tensor(in , device);
 	auto outputs = to_tensor(out, device);
 
@@ -37,7 +34,6 @@ Error Pytorch::train(bool verbose) {
 		torch::zeros({n_sequences, batch_size, 1}, device);
         auto outputs = torch::zeros({n_sequences, batch_size, 1}, device);*/
 	auto hist = torch::zeros(conf.num_epochs, device);
-	cout << "training" << endl;
         model.train();
 	for(int i = 0; i < conf.num_epochs; i++){
                	model.zero_grad();
@@ -61,7 +57,7 @@ Error Pytorch::train(bool verbose) {
 	return err;
 }
 
-pair<vector<double>, double> Pytorch::evaluate() {
+pair<vector<double>, Error> Pytorch::evaluate() {
 	model.eval();
         model.reset_hidden();
         auto output = torch::zeros({1, (int)time_series.size(), 1}, device);
@@ -74,11 +70,7 @@ pair<vector<double>, double> Pytorch::evaluate() {
 				for(int z = 0; z < conf.input_dim; z++){
                                 	input[0][j][z] = time_series[j + shift][z];
                         	}
-				if(time_series[0].size() > 1){
-                               		output[0][j + shift] = time_series[j + shift][conf.target_column];
-				}else{
-					output[0][j + shift] = time_series[j + shift + 1][0];
-				}
+                             	output[0][j + shift] = time_series[j + shift + 1][conf.target_column];
 
                         }
        	        }
@@ -89,6 +81,9 @@ pair<vector<double>, double> Pytorch::evaluate() {
         }
 
 	auto rescaled = rescale(to_vec_1d(net_output));
-	return {rescaled, at::mse_loss(net_output, output).item().to<double>()};
+	auto resc_out = rescale(to_vec_1d(output));
+	err.add_record(rescaled, resc_out);
+	err.calc();
+	return {rescaled, err};
 
 }

@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <set>
+
 struct Config{
 	int hidden_dim;
 	int input_dim;
@@ -12,6 +14,7 @@ struct Config{
 	float learning_rate;
 
 	int target_column;
+	std::set<int> ignore;
 };
 
 #endif

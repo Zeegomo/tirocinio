@@ -8,7 +8,7 @@ class ANNT_Net : public Network {
 	public:
 		ANNT_Net(Config conf, std::vector<std::vector<double>> raw_time_series);
 		Error train(bool verbose = true);
-		std::pair<std::vector<double>, double> evaluate();
+		std::pair<std::vector<double>, Error> evaluate();
 
 	private:
 		std::shared_ptr<ANNT::Neuro::XNeuralNetwork> net;

@@ -8,7 +8,7 @@
 class Network {
 	public:
 		virtual Error train(bool verbose = false) = 0;
-		virtual std::pair<std::vector<double>, double> evaluate() = 0;
+		virtual std::pair<std::vector<double>, Error> evaluate() = 0;
 		Network(Config config, std::vector<std::vector<double>> raw_time_series);
 
 	protected:

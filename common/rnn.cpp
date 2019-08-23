@@ -19,15 +19,15 @@ void serialize(ofstream &fout, vector<double> &v, int len = -1){
 }	
 
 Executor::Executor(){
-	this->raw_time_series = load_data();
-        this->conf = load_config(CONF, raw_time_series);
+        this->conf = load_config(CONF);
+	this->raw_time_series = load_data(conf);
 }
 
-pair<vector<vector<double>>, Config> Executor::get_data(){
-	return {raw_time_series, conf}; 	
+pair<Config, vector<vector<double>>> Executor::get_data(){
+	return {conf, raw_time_series}; 	
 }
 
-void Executor::start(Network model){
+void Executor::start(Network *model){
 	ofstream fout("out.data");
 
 	cout << "Starting.." << endl << endl;
@@ -47,14 +47,17 @@ void Executor::start(Network model){
 	}
 	
 	cout << "Training..." << endl;	
-	auto hist = model.train();
+	auto hist = model->train(true);
 	
 	cout << endl << "Evaluation..." << endl;
-	auto res = model.evaluate();
+	auto res = model->evaluate();
 
-	cout << "MSE: " << res.second << endl;
-
-	cout << "Serializing to file" << endl;
+	cout << "MSE: " << res.second.mse << endl;
+	cout << "MAD: " << res.second.mad << endl;
+	cout << "BIAS: " << res.second.bias << endl;
+	cout << "MAPE: " << res.second.mape << endl;
+	cout << "RMSE: " << res.second.rmse << endl;
+	cout << endl << "Serializing to file" << endl;
 
 	serialize(fout, output);
 	serialize(fout, res.first, output.size());
