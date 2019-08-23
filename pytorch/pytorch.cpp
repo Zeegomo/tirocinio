@@ -66,17 +66,24 @@ pair<vector<double>, Error> Pytorch::evaluate() {
                	auto input = torch::zeros({1, conf.batch_size, conf.input_dim}, device);
                 int shift = i*conf.batch_size;
        	        for(int j = 0; j < conf.batch_size; j++){
-			if(j + shift + 1 < time_series.size()){
-				for(int z = 0; z < conf.input_dim; z++){
+					if(j + shift + 1 < time_series.size()){
+						for(int z = 0; z < conf.input_dim; z++){
                                 	input[0][j][z] = time_series[j + shift][z];
                         	}
                              	output[0][j + shift] = time_series[j + shift + 1][conf.target_column];
 
-                        }
+                    }
        	        }
                	auto net = model.forward(input);
-                for(int j = 0; j < conf.batch_size; j++){
-       	        	net_output[0][j + shift] = net[0][j];
+                for(int j = 0; j < net.sizes()[1]; j++){
+					if (j + shift + 1 < time_series.size()) {
+#ifdef _WIN32
+						float d = net[0][j][0].item().to<float>();
+						net_output[0][j + shift][0] = d;
+#else
+						net_output[0][j + shift] = net[0][j];
+#endif
+					}
                	}
         }
 

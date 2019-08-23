@@ -74,16 +74,16 @@ Config load_config(std::string path){
      	fin >> j;
 	Config conf;
 
-	conf.input_dim = j["input_dim"];
-	conf.hidden_dim = j["hidden_dim"];
-	conf.output_dim = j["output_dim"];
+	conf.input_dim = j.at("input_dim").get<int>();
+	conf.hidden_dim = j.at("hidden_dim").get<int>();
+	conf.output_dim = j.at("output_dim").get<int>();
 
-	conf.learning_rate = j["learning_rate"];
-	conf.num_epochs = j["num_epochs"];
-	conf.batch_size = j["batch_size"];
-	conf.n_sequences = j["training_samples"];
-	conf.target_column = j["target_column"];
-	vector<int> ignore = j["ignore"];
+	conf.learning_rate = j.at("learning_rate").get<float>();
+	conf.num_epochs = j.at("num_epochs").get<int>();
+	conf.batch_size = j.at("batch_size").get<int>();
+	conf.n_sequences = j.at("training_samples").get<int>();
+	conf.target_column = j.at("target_column").get<int>();
+	vector<int> ignore = j.at("ignore").get<vector<int>>();
 	for(int i : ignore){
 		conf.ignore.insert(i);
 	}

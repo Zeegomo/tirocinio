@@ -5,6 +5,7 @@ if(UNIX)
 	SET(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/pytorch-lib/unix/libtorch/")
 else()
 	SET(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}\\pytorch-lib\\windows\\libtorch")
+	SET(CMAKE_BUILD_TYPE "Release")
 endif()
 
 find_package(Torch REQUIRED)
