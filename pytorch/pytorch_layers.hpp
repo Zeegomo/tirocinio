@@ -9,11 +9,12 @@ struct LSTM : torch::nn::Module {
         void reset_hidden();
         torch::Tensor forward(torch::Tensor input);
 
-        private:
         torch::nn::LSTM lstm;
         torch::nn::Linear linear;
         torch::Tensor hidden;
-        int batch_size;
+	
+	private:
+	int batch_size;
         int input_dim;
         int output_dim;
         int hidden_dim;

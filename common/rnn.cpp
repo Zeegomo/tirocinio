@@ -1,11 +1,14 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <string>
 #include "csv.hpp"
 #include "network.hpp"
 #include "rnn.hpp"
 
 #define CONF "parameters.json"
+#define SAVE_PATH "saved"
+
 using namespace std;
 
 void serialize(ofstream &fout, vector<double> &v, int len = -1){
@@ -27,9 +30,8 @@ pair<Config, vector<vector<double>>> Executor::get_data(){
 	return {conf, raw_time_series}; 	
 }
 
-void Executor::start(Network *model){
-	ofstream fout("out.data");
 
+void Executor::train(Network *model){
 	cout << "Starting.." << endl << endl;
 	cout << "Input dim: " << conf.input_dim << endl;
 	cout << "Hidden dim: " << conf.hidden_dim << endl;
@@ -41,16 +43,23 @@ void Executor::start(Network *model){
 	cout << "Learning rate: " << conf.learning_rate << endl << endl;
 
 
+	
+	cout << "Training..." << endl;	
+	hist = model->train(true);	
+	model->save(SAVE_PATH);
+	cout << "Model saved to " << SAVE_PATH << endl;
+}
+
+void Executor::evaluate(Network *model){
+	ofstream fout("out.data");
+
+	cout << endl << "Evaluation..." << endl;
+	auto res = model->evaluate();
+
 	vector<double> output;
 	for(int i = 1; i < raw_time_series.size()-1; i++){
 		output.push_back(raw_time_series[i+1][conf.target_column]);
 	}
-	
-	cout << "Training..." << endl;	
-	auto hist = model->train(true);
-	
-	cout << endl << "Evaluation..." << endl;
-	auto res = model->evaluate();
 
 	cout << "MSE: " << res.second.mse << endl;
 	cout << "MAD: " << res.second.mad << endl;
@@ -63,4 +72,13 @@ void Executor::start(Network *model){
 	serialize(fout, res.first, output.size());
 	serialize(fout, hist.v_mse);
 }
+
+void Executor::evaluate(Network *model, string path){
+	model->load(path);
+	model->apply_diff();
+	model->normalize_data();
+	evaluate(model);
+}
+
+
 

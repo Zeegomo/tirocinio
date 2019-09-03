@@ -1,9 +1,16 @@
 #include <torch/torch.h>
 #include <vector>
+#include <filesystem>
 #include "network.hpp"
 #include "pytorch.hpp"
 #include "pytorch_utils.hpp"
 #include "error.hpp"
+
+#ifdef WIN32
+	#define SEP "\\"
+#else
+	#define SEP "/"
+#endif
 
 using namespace std;
 
@@ -94,3 +101,15 @@ pair<vector<double>, Error> Pytorch::evaluate() {
 	return {rescaled, err};
 
 }
+
+void Pytorch::save(string filename){
+	torch::save(model.lstm, filename + SEP + "/lstm");
+	torch::save(model.linear, filename + SEP + "/linear");
+}
+
+void Pytorch::load(string filename){
+	torch::load(model.lstm, filename + SEP + "/lstm");
+	torch::load(model.linear, filename + SEP + "/linear");
+	//model.eval();
+}
+

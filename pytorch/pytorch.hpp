@@ -3,6 +3,7 @@
 
 #include <torch/torch.h>
 #include <vector>
+#include <string>
 #include "network.hpp"
 #include "error.hpp"
 #include "pytorch_layers.hpp"
@@ -13,6 +14,8 @@ class Pytorch : public Network {
 
         Error train(bool verbose = true);
         std::pair<std::vector<double>, Error> evaluate();
+	void save(std::string filename);
+	void load(std::string filename);
 
         private:
         LSTM model;

@@ -16,3 +16,4 @@ target_include_directories(py-rnn PRIVATE ../common/ )
 
 target_link_libraries(py-rnn "${TORCH_LIBRARIES}")
 target_compile_options(py-rnn PUBLIC "-g")
+set_property(TARGET py-rnn PROPERTY CXX_STANDARD 17)
