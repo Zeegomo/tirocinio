@@ -116,3 +116,6 @@ pair<vector<double>, Error> ANNT_Net::evaluate(){
 	return {rescaled, err};
 }
 
+void ANNT_Net::save(string filename){}
+void ANNT_Net::load(string filename){}
+

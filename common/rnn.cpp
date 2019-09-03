@@ -30,7 +30,6 @@ pair<Config, vector<vector<double>>> Executor::get_data(){
 	return {conf, raw_time_series}; 	
 }
 
-
 void Executor::train(Network *model){
 	cout << "Starting.." << endl << endl;
 	cout << "Input dim: " << conf.input_dim << endl;
@@ -79,6 +78,3 @@ void Executor::evaluate(Network *model, string path){
 	model->normalize_data();
 	evaluate(model);
 }
-
-
-
