@@ -3,6 +3,7 @@
 ## Requirements:
 C++11 compiler
 
+## General 
 ### `parameters.json` config
 * `input_dim`: n. of input variables
 * `output_dim`: n. of output variables (1)
@@ -13,6 +14,27 @@ C++11 compiler
 * `learning_rate`: learning rate,
 * `target_column`: the column to predict (calculated after ignore columns)
 * `ignore`: columns to be ignored
+
+### Usage
+Dataset will be read from stdin.
+
+If you launch the program without additional parameters it trains on a subset of the dataset (specified in `parameters.json`) and then tests the trained model on the whole sequence.
+The results of the evaluation task is available in `out.data` file, where the first line is the original data and the second is the predicted one. 
+
+You can use `print.py` (requires matplotlib) to display those data.
+
+### Save and load model parameters (only available in Pytorch)
+If you want to save or load the trained model you have to specify a path to an existing directory where the parameters will be saved.
+You can do that at launch:
+* `py-rnn MODE YOUR_LOCATION < YOUR_DATASET`
+
+`MODE` specifies what the program will do:
+
+* `t` : train the model from scratch and save to `YOUR_LOCATION`
+* `e` : load model from `YOUR_LOCATION` and test it on `YOUR_DATASET`. Results will be saved in `out.data`. 
+* `te`, `te`: train the model  from scratch and test it on `YOUR_DATASET`. Model will be save in `YOUR_LOCATION` and results in `out.data` .
+
+`YOUR_LOCATION` is the path to an existing directory.
 
 ## Windows
 * Clone repo
