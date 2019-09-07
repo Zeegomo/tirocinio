@@ -7,7 +7,6 @@
 #include "rnn.hpp"
 
 #define CONF "parameters.json"
-#define SAVE_PATH "saved"
 
 using namespace std;
 
@@ -41,12 +40,15 @@ void Executor::train(Network *model){
 	cout << "Length of training sequences: " << conf.batch_size << endl;
 	cout << "Learning rate: " << conf.learning_rate << endl << endl;
 
-
-	
 	cout << "Training..." << endl;	
 	hist = model->train(true);	
-	model->save(SAVE_PATH);
-	cout << "Model saved to " << SAVE_PATH << endl;
+
+}
+
+void Executor::train(Network *model, string path){
+	train(model);
+	model->save(path);
+	cout << "Model saved to " << path << endl;
 }
 
 void Executor::evaluate(Network *model){

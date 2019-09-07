@@ -10,6 +10,7 @@ struct Executor{
 	Executor();
 	std::pair<Config, std::vector<std::vector<double>>> get_data();
 	void train(Network *model);
+	void train(Network *model, std::string path);
 	void evaluate(Network *model);
 	void evaluate(Network *model, std::string path);
 
