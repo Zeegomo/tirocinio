@@ -19,7 +19,7 @@ C++11 compiler
 Dataset will be read from stdin.
 
 If you launch the program without additional parameters it trains on a subset of the dataset (specified in `parameters.json`) and then tests the trained model on the whole sequence.
-The results of the evaluation task is available in `out.data` file, where the first line is the original data and the second is the predicted one. 
+The results of the evaluation task is available in `out.data`, where the first line is the original data and the second is the predicted one. 
 
 You can use `print.py` (requires matplotlib) to display those data.
 
@@ -32,7 +32,7 @@ You can do that at launch:
 
 * `t` : train the model from scratch and save to `YOUR_LOCATION`
 * `e` : load model from `YOUR_LOCATION` and test it on `YOUR_DATASET`. Results will be saved in `out.data`. 
-* `te`, `te`: train the model  from scratch and test it on `YOUR_DATASET`. Model will be save in `YOUR_LOCATION` and results in `out.data` .
+* `te`, `et`: train the model  from scratch and test it on `YOUR_DATASET`. Model will be save in `YOUR_LOCATION` and results in `out.data` .
 
 `YOUR_LOCATION` is the path to an existing directory.
 
